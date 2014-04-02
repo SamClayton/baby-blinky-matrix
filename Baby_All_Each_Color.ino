@@ -1,4 +1,9 @@
+/* Cycle through each color on all 16 LEDs simultaneously. */
 
+
+/* NUM_TLCS is defined in "tlc_config.h" in the library folder.  After editing tlc_config.h 
+   for your setup, delete the
+   Tlc5940.o file to save the changes. */
 #include "Tlc5940.h"
 
 // For hue calc
@@ -8,48 +13,78 @@ void setup()
 {
   /* Call Tlc.init() to setup the tlc.
      You can optionally pass an initial PWM value (0 - 4095) for all channels.*/
-  Tlc.init();
-  hueToRGB(288, 89);
+  Tlc.init(4095);
+  delay(500);
   
-  Serial.begin(9600);           // set up Serial library at 9600 bps
-  Serial.println("Hello world!");  // prints hello with ending line break 
+  Serial.begin(9600);
+  Serial.println("Setup done!"); 
 }
-
-/* This loop will create a Knight Rider-like effect if you have LEDs plugged
-   into all the TLC outputs.  NUM_TLCS is defined in "tlc_config.h" in the
-   library folder.  After editing tlc_config.h for your setup, delete the
-   Tlc5940.o file to save the changes. */
  
 void loop() {
+  //setFirstDozenRed();
+  redChaser();
+  greenChaser();
+  blueChaser();
+
+  // First 2 set to blue
+  //BlinkFirstTwoBlue();
+  
   /*
-  for (int TLC = 0; TLC < NUM_TLCS; TLC++) {
-    for (int LED = 0; LED < 16; LED+=3) {
-      Tlc.clear();
-      
-      Tlc.set(((TLC * 16) + LED), 4095);
-      
-      Tlc.update();
-      //Serial.println ((TLC * 16) + LED);
-      delay(500);
-    }
-  }
+  setAllRed();
+  Serial.println("Red, waiting...");
+  delay(500);
   */
   /*
-  //Serial.println("end loop");
-  for (int TLC = 0; TLC < NUM_TLCS; TLC++) {
-    for (int LED = 0; LED < 16; LED++) {
-      Tlc.clear();
-    
-      Tlc.set(((TLC * 16) + LED), 4095);
-    
-      Tlc.update();
-      delay(500);
-    }
-  }
+  Tlc.clear();
+  Tlc.set(0, 4095);
+  Tlc.update();
+  delay(500);
+  */
+  /*
+  setAllBlue();
+  Serial.println("Blue, waiting...");
+  delay(500);
   */
   
-  // First 2 set to blue
   /*
+  setAllRed();
+  Serial.println("Red, waiting...");
+  delay(500);
+  */
+  /*
+  setAllGreen();
+  Serial.println("Green, waiting...");
+  delay(500);
+  */
+}
+
+void redChaser() {
+  eachChannelLoop(100, 3, 0);
+}
+
+void greenChaser() {
+  eachChannelLoop(100, 3, 1);
+}
+
+void blueChaser() {
+  eachChannelLoop(100, 3, 2);
+}
+
+void eachChannelLoop(int delayTime, int skipChannels, int firstChannel) {
+  for (int i=firstChannel; i<(NUM_TLCS*16); i+=skipChannels) {
+    Serial.println(i);
+    Tlc.clear();
+    Tlc.set(i, 4095);
+    Tlc.update();
+    delay(delayTime);
+  }
+}
+
+void eachChannelLoop() {
+  eachChannelLoop(500, 1, 0);
+}
+
+void BlinkFirstTwoBlue() {
   Tlc.clear();
   Tlc.set(2, 4095);
   Tlc.update();
@@ -57,37 +92,69 @@ void loop() {
   Tlc.set(5, 4095);
   Tlc.update();
   delay(5000);
-  */
-  setAllBlue();
-  Serial.println("Waiting...");
-  delay(500);
+}
+
+void setFirstDozenRed() {
+  Tlc.clear();
+  for (int i=0; i<30; i+=3) {
+    Serial.println(i);
+    Tlc.set(i, 2000);
+  }
+  Tlc.update();
+  delay(5000);
 }
 
 void setAllBlue() {
   int blue[3] = {0,0,4095};
+  setAllPhysLEDs(blue);
+}
+
+void setAllRed() {
+  int red[3] = {4095,0,0};
+  setAllPhysLEDs(red);
+}
+
+void setAllGreen() {
+  int green[3] = {0,4095,0};
+  setAllPhysLEDs(green);
+}
+
+void setAllPhysLEDs(int color[3]) {
   Tlc.clear();
   int physLEDs = NUM_TLCS / 3 * 16;
   for (int physLED = 0; physLED < physLEDs; physLED++) {
-    //Serial.println(physLED);
-    //setPhysLED(physLED, 116);
-    setPhysLED(physLED, blue);
+    setPhysLED(physLED, color);
   }
   Tlc.update();
 }
 
 void setPhysLED(int physLEDnum, int color[3]) {
-  Serial.print(physLEDnum*3); Serial.print(": "); Serial.print(color[0]); Serial.print(", "); Serial.print(color[1]); Serial.print(", "); Serial.print(color[2]); 
+  //Serial.print(physLEDnum*3); Serial.print(": "); Serial.print(color[0]); Serial.print(", "); Serial.print(color[1]); Serial.print(", "); Serial.print(color[2]); 
+  //Serial.println("");
+
+  Tlc.set(physLEDnum * 3, color[0]);
+  printChannelAndBrightness(physLEDnum * 3, color[0]);
+  Tlc.set((physLEDnum * 3)+1, color[1]);
+  printChannelAndBrightness((physLEDnum * 3)+1, color[1]);
+  Tlc.set((physLEDnum * 3)+2, color[2]);
+  printChannelAndBrightness((physLEDnum * 3)+2, color[2]);
+}
+
+void printChannelAndBrightness(int channel, int brightness){
+  Serial.print(channel);
+  Serial.print(": ");
+  Serial.println(brightness);
+}
+
+void setPhysLED(int physLEDnum, int hue, int brightness) {
+  hueToRGB(hue, brightness);
+  int color[3] = {R,G,B};
   Tlc.set(physLEDnum * 3, color[0]);
   Tlc.set((physLEDnum * 3)+1, color[1]);
   Tlc.set((physLEDnum * 3)+2, color[2]);
-  //Tlc.update();
-  Serial.println("");
-}
-/*
-void setPhysLED(int physLEDnum, int hue) {
   
 }
-*/
+
 
 void setLED(int LEDnum, int color[3]) {
   Tlc.set(LEDnum * 3, color[0]);
