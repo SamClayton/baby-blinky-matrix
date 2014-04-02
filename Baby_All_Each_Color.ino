@@ -17,14 +17,18 @@ void setup()
   delay(500);
   
   Serial.begin(9600);
-  Serial.println("Setup done!"); 
+  Serial.print("Setup done with "); Serial.print(NUM_TLCS); Serial.println(" TLCs!");
+  delay(100);
 }
  
 void loop() {
   //setFirstDozenRed();
+  
+  /*
   redChaser();
   greenChaser();
   blueChaser();
+  */
 
   // First 2 set to blue
   //BlinkFirstTwoBlue();
@@ -40,20 +44,27 @@ void loop() {
   Tlc.update();
   delay(500);
   */
-  /*
+  
   setAllBlue();
   Serial.println("Blue, waiting...");
   delay(500);
+  setAllGreen();
+  Serial.println("Green, waiting...");
+  delay(500);
+  /*
+  int pink[3] = {1024, 100, 100};
+  setAllPhysLEDs(pink);
+  Serial.println("Pink, waiting...");
+  delay(3000);
   */
+  setAllPhysLEDs(4000,0,4000);
+  Serial.println("Purple, waiting...");
+  delay(3000);
+
   
   /*
   setAllRed();
   Serial.println("Red, waiting...");
-  delay(500);
-  */
-  /*
-  setAllGreen();
-  Serial.println("Green, waiting...");
   delay(500);
   */
 }
@@ -95,13 +106,23 @@ void BlinkFirstTwoBlue() {
 }
 
 void setFirstDozenRed() {
+  /* Because REASONS (?!), this causes my board to reboot after the call to Tlc.update() */
   Tlc.clear();
-  for (int i=0; i<30; i+=3) {
+  for (int i=0; i<16; i+=3) {
     Serial.println(i);
-    Tlc.set(i, 2000);
+    Tlc.set(i, 4000);
+    delay(15);
   }
   Tlc.update();
   delay(5000);
+}
+
+void setAllRed() {
+  /* Because REASONS (?!), this causes my board to reboot after the call to Tlc.update() 
+     Strangely, setAllBlue(), setAllGreen(), and setAllWhite() work just fine, and I can 
+     cycle between them with no issues. */
+  int red[3] = {4095,0,0};
+  setAllPhysLEDs(red);
 }
 
 void setAllBlue() {
@@ -109,17 +130,27 @@ void setAllBlue() {
   setAllPhysLEDs(blue);
 }
 
-void setAllRed() {
-  int red[3] = {4095,0,0};
-  setAllPhysLEDs(red);
-}
-
 void setAllGreen() {
   int green[3] = {0,4095,0};
   setAllPhysLEDs(green);
 }
 
+void setAllWhite() {
+  int white[3] = {4095,4095,4095};
+  setAllPhysLEDs(white);
+}
+
 void setAllPhysLEDs(int color[3]) {
+  Tlc.clear();
+  int physLEDs = NUM_TLCS / 3 * 16;
+  for (int physLED = 0; physLED < physLEDs; physLED++) {
+    setPhysLED(physLED, color);
+  }
+  Tlc.update();
+}
+
+void setAllPhysLEDs(int red, int green, int blue) {
+  int color[3] = {red, green, blue};
   Tlc.clear();
   int physLEDs = NUM_TLCS / 3 * 16;
   for (int physLED = 0; physLED < physLEDs; physLED++) {
