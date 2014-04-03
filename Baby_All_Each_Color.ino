@@ -1,4 +1,5 @@
-/* Cycle through each color on all 16 LEDs simultaneously. */
+/* Various patterns for a 16-LED 4x4 matrix of RGB LEDs controlled by a custom board powered 
+   by 3 TLC5940s and an atmega328 running Arduino. */
 
 
 /* NUM_TLCS is defined in "tlc_config.h" in the library folder.  After editing tlc_config.h 
@@ -12,13 +13,13 @@ int R, G, B;
 void setup()
 {
   /* Call Tlc.init() to setup the tlc.
-     You can optionally pass an initial PWM value (0 - 4095) for all channels.*/
+     You can optionally pass an initial PWM value (0 - 4095) for all channels.
+     Here, we turn on all LED channels to full brightness for half a second at start-up. */
   Tlc.init(4095);
   delay(500);
   
   Serial.begin(9600);
   Serial.print("Setup done with "); Serial.print(NUM_TLCS); Serial.println(" TLCs!");
-  delay(100);
 }
  
 void loop() {
@@ -33,11 +34,11 @@ void loop() {
   // First 2 set to blue
   //BlinkFirstTwoBlue();
   
-  /*
+  
   setAllRed();
   Serial.println("Red, waiting...");
   delay(500);
-  */
+  
   /*
   Tlc.clear();
   Tlc.set(0, 4095);
@@ -45,6 +46,7 @@ void loop() {
   delay(500);
   */
   
+  /*
   setAllBlue();
   Serial.println("Blue, waiting...");
   delay(500);
@@ -57,10 +59,11 @@ void loop() {
   Serial.println("Pink, waiting...");
   delay(3000);
   */
+  /*
   setAllPhysLEDs(4000,0,4000);
   Serial.println("Purple, waiting...");
   delay(3000);
-
+  */
   
   /*
   setAllRed();
